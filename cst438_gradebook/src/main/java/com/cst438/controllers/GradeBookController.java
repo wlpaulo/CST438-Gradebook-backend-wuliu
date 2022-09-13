@@ -1,22 +1,27 @@
 package com.cst438.controllers;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.cst438.domain.Assignment;
 import com.cst438.domain.AssignmentListDTO;
+import com.cst438.domain.AssignmentListDTO.AssignmentDTO;
 import com.cst438.domain.AssignmentGrade;
 import com.cst438.domain.AssignmentGradeRepository;
 import com.cst438.domain.AssignmentRepository;
@@ -154,6 +159,46 @@ public class GradeBookController {
 			assignmentGradeRepository.save(ag);
 		}
 		
+	}
+	
+	@GetMapping("/assignment/{id}")
+	@Transactional
+	public Assignment getAssignment(@PathVariable int assignment_id) {
+		Assignment assignment = assignmentRepository.findById(assignment_id);
+		
+		return assignment;
+	}
+	
+	//As instructor, add a new assignment for my course.  The assignment has a name and a due date.
+	@PostMapping("/assignment")
+	@Transactional
+
+	public void addAssignment (@RequestParam String name, @RequestParam Date dueDate) {
+		
+		Assignment assignment = new Assignment();
+		assignment.setName(name);
+		assignment.setDueDate(dueDate);
+		assignmentRepository.save(assignment);
+	}
+	
+	
+	//As an instructor, I can change the name of the assignment for my course.
+	@PutMapping("/assignment/{id}")
+	@Transactional
+	public void changeAssignment (@PathVariable("id") Integer assignmentId, @PathVariable("name") String name ) {
+		
+		
+		Assignment assignment = assignmentRepository.findById(assignmentId).orElse(null);
+		assignment.name = name;
+		assignmentRepository.save(assignment);
+	}
+
+	//As an instructor, I can delete an assignment  for my course (only if there are no grades for the assignment).
+	@DeleteMapping ("assignment/{id}")
+	@Transactional
+	public void deleteAssignment (@PathVariable int assignment_Id) {
+		Assignment assignment = assignmentRepository.findById(assignment_Id).orElse(null);
+		assignmentRepository.delete(assignment);
 	}
 	
 	private Assignment checkAssignment(int assignmentId, String email) {
