@@ -164,7 +164,7 @@ public class GradeBookController {
 	@GetMapping("/assignment/{id}")
 	@Transactional
 	public Assignment getAssignment(@PathVariable int assignment_id) {
-		Assignment assignment = assignmentRepository.findById(assignment_id);
+		Assignment assignment = assignmentRepository.findById(assignment_id).orElse(null);
 		
 		return assignment;
 	}
@@ -173,17 +173,17 @@ public class GradeBookController {
 	@PostMapping("/assignment")
 	@Transactional
 
-	public void addAssignment (@RequestParam String name, @RequestParam Date dueDate) {
+	public Assignment addAssignment (@RequestParam String name, @RequestParam Date dueDate) {
 		
 		Assignment assignment = new Assignment();
 		assignment.setName(name);
 		assignment.setDueDate(dueDate);
-		assignmentRepository.save(assignment);
+		return assignmentRepository.save(assignment);
 	}
 	
 	
 	//As an instructor, I can change the name of the assignment for my course.
-	@PutMapping("/assignment/{id}")
+	@PutMapping("/assignment/{id}/{name}")
 	@Transactional
 	public void changeAssignment (@PathVariable("id") Integer assignmentId, @PathVariable("name") String name ) {
 		
@@ -196,9 +196,16 @@ public class GradeBookController {
 	//As an instructor, I can delete an assignment  for my course (only if there are no grades for the assignment).
 	@DeleteMapping ("assignment/{id}")
 	@Transactional
-	public void deleteAssignment (@PathVariable int assignment_Id) {
-		Assignment assignment = assignmentRepository.findById(assignment_Id).orElse(null);
-		assignmentRepository.delete(assignment);
+	public void deleteAssignment (@PathVariable("id") int assignment_Id) throws Exception { 
+		if(assignmentRepository.existsById(assignment_Id)) {
+			assignmentRepository.deleteById(assignment_Id);
+		}
+		else {
+			throw new Exception("Id not found");
+		}
+		
+		
+		
 	}
 	
 	private Assignment checkAssignment(int assignmentId, String email) {
