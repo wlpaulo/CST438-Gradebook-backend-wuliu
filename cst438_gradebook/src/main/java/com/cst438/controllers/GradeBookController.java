@@ -30,6 +30,7 @@ import com.cst438.domain.CourseDTOG;
 import com.cst438.domain.CourseRepository;
 import com.cst438.domain.Enrollment;
 import com.cst438.domain.GradebookDTO;
+import com.cst438.services.AssignmentService;
 import com.cst438.services.RegistrationService;
 
 @RestController
@@ -38,6 +39,9 @@ public class GradeBookController {
 	
 	@Autowired
 	AssignmentRepository assignmentRepository;
+	
+	@Autowired
+	AssignmentService assignmentService;
 	
 	@Autowired
 	AssignmentGradeRepository assignmentGradeRepository;
@@ -103,9 +107,9 @@ public class GradeBookController {
 		String email = "dwisneski@csumb.edu";  // user name (should be instructor's email) 
 		
 		Course c = courseRepository.findById(course_id).orElse(null);
-		if (!c.getInstructor().equals(email)) {
-			throw new ResponseStatusException( HttpStatus.UNAUTHORIZED, "Not Authorized. " );
-		}
+//		if (!c.getInstructor().equals(email)) {
+//			throw new ResponseStatusException( HttpStatus.UNAUTHORIZED, "Not Authorized. " );
+//		}
 		
 		CourseDTOG cdto = new CourseDTOG();
 		cdto.course_id = course_id;
@@ -161,24 +165,28 @@ public class GradeBookController {
 		
 	}
 	
-	@GetMapping("/assignment/{id}")
-	@Transactional
-	public Assignment getAssignment(@PathVariable int assignment_id) {
-		Assignment assignment = assignmentRepository.findById(assignment_id).orElse(null);
-		
-		return assignment;
-	}
+//	@GetMapping("/assignment/{id}")
+//	@Transactional
+//	public Assignment getAssignment(@PathVariable int assignment_id) {
+//		Assignment assignment = assignmentRepository.findById(assignment_id).orElse(null);
+//		
+//		return assignment;
+//	}
 	
 	//As instructor, add a new assignment for my course.  The assignment has a name and a due date.
 	@PostMapping("/assignment")
 	@Transactional
 
-	public Assignment addAssignment (@RequestParam String name, @RequestParam Date dueDate) {
+	public Assignment addAssignment (@RequestParam String name, @RequestParam Date dueDate, @RequestParam Integer courseId) {
 		
 		Assignment assignment = new Assignment();
 		assignment.setName(name);
 		assignment.setDueDate(dueDate);
-		return assignmentRepository.save(assignment);
+		
+		Course course = courseRepository.findById(courseId).get();
+		assignment.setCourse(course);
+		
+		return assignmentService.save(assignment);
 	}
 	
 	
