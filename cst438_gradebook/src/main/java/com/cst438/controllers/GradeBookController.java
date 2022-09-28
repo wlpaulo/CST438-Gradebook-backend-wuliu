@@ -107,9 +107,9 @@ public class GradeBookController {
 		String email = "dwisneski@csumb.edu";  // user name (should be instructor's email) 
 		
 		Course c = courseRepository.findById(course_id).orElse(null);
-//		if (!c.getInstructor().equals(email)) {
-//			throw new ResponseStatusException( HttpStatus.UNAUTHORIZED, "Not Authorized. " );
-//		}
+		if (!c.getInstructor().equals(email)) {
+			throw new ResponseStatusException( HttpStatus.UNAUTHORIZED, "Not Authorized. " );
+		}
 		
 		CourseDTOG cdto = new CourseDTOG();
 		cdto.course_id = course_id;
